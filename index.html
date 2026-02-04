@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drak's Sentiment Analysis</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f0f2f5; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
+        h2 { color: #1a73e8; margin-bottom: 0.5rem; }
+        p { color: #5f6368; margin-bottom: 1.5rem; }
+        textarea { width: 100%; height: 120px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; resize: none; font-size: 1rem; box-sizing: border-box; transition: border-color 0.3s; }
+        textarea:focus { outline: none; border-color: #1a73e8; }
+        button { width: 100%; padding: 12px; margin-top: 1rem; background-color: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background-color 0.3s; }
+        button:hover { background-color: #1557b0; }
+        #result-container { margin-top: 2rem; padding: 1rem; border-radius: 8px; display: none; }
+        .result-text { font-size: 1.2rem; font-weight: bold; text-transform: uppercase; }
+        .positive { background-color: #e6f4ea; color: #1e8e3e; border: 1px solid #1e8e3e; }
+        .negative { background-color: #fce8e6; color: #d93025; border: 1px solid #d93025; }
+        .neutral { background-color: #f1f3f4; color: #5f6368; border: 1px solid #5f6368; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Drak's</h2>
+        <p>Alumni Feedback Sentiment Analyzer</p>
+        <textarea id="userInput" placeholder="Type alumni feedback or career-matching reviews here..."></textarea>
+        <button onclick="analyzeSentiment()">Analyze Sentiment</button>
+
+        <div id="result-container">
+            <span>Result: </span>
+            <span id="sentimentResult" class="result-text"></span>
+        </div>
+    </div>
+
+    <script>
+        async function analyzeSentiment() {
+            const text = document.getElementById('userInput').value;
+            const resultContainer = document.getElementById('result-container');
+            const resultText = document.getElementById('sentimentResult');
+
+            if (!text.trim()) {
+                alert("Please enter some text first!");
+                return;
+            }
+
+            try {
+                // Fetch request to Flask API
+                const response = await fetch('http://127.0.0.1:5000/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    resultContainer.style.display = 'block';
+                    resultText.innerText = data.sentiment;
+                    
+                    // Reset classes and apply new one
+                    resultContainer.className = ''; 
+                    resultContainer.classList.add(data.sentiment);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Could not connect to the backend. Make sure app.py is running!");
+            }
+        }
+    </script>
+</body>
+</html>
